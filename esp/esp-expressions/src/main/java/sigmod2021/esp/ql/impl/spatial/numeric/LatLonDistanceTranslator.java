@@ -1,0 +1,32 @@
+package sigmod2021.esp.ql.impl.spatial.numeric;
+
+import org.kohsuke.MetaInfServices;
+import sigmod2021.common.IncompatibleTypeException;
+import sigmod2021.esp.api.epa.pattern.symbol.Bindings;
+import sigmod2021.esp.api.expression.spatial.numeric.LatLonDistance;
+import sigmod2021.esp.expressions.spatial.numeric.EVLatLonDistance;
+import sigmod2021.esp.ql.ExpressionTranslator;
+import sigmod2021.esp.ql.Translator;
+import sigmod2021.esp.ql.TranslatorException;
+import sigmod2021.event.EventSchema;
+import sigmod2021.event.SchemaException;
+
+/**
+ *
+ */
+@MetaInfServices
+public class LatLonDistanceTranslator extends Translator<LatLonDistance, EVLatLonDistance> {
+
+    public LatLonDistanceTranslator() {
+        super(LatLonDistance.class, EVLatLonDistance.class);
+    }
+
+    @Override
+    protected EVLatLonDistance process(LatLonDistance in, ExpressionTranslator translator, EventSchema schema, Bindings bindings)
+            throws TranslatorException, IncompatibleTypeException, SchemaException {
+        return new EVLatLonDistance(
+                translator.translateSpatialExpression(in.getInput(0), schema, bindings),
+                translator.translateSpatialExpression(in.getInput(1), schema, bindings));
+    }
+
+}
