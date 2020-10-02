@@ -10,5 +10,8 @@ After completion, the results of the experiments are found in the `pattern/patte
 ## Prequisites
 In order to run the experiments please make sure you have sufficient disk space for managing the indexes (~50 GiB). Moreover, make sure you are running Oracle JDK 14.0.1 or above and Maven (>= 3.0) is installed properly (i.e., the `mvn` command is in your path).
 
+## Data sets
+The data sets used during evaluation are found in `data/src`. To check out the files, you need to install the git-lfs extension (https://git-lfs.github.com/). Furthermore, before running the experiments, you need to unzip the checked out data files.
+
 
 
