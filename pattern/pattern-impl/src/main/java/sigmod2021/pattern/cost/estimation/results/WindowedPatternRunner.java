@@ -83,7 +83,12 @@ public class WindowedPatternRunner {
         // Additionally remove hits which cannot be part of a match anymore
         long currentIdx = firstIndex;
 
-        for (int cIdx = 1; cIdx < valids.size(); cIdx++) {
+        Deque<SubTreeDescription> conditionStds = new ArrayDeque<>();
+        conditionStds.add(windowContent.peekFirst());
+
+        int cIdx = 1;
+
+        while ( !conditionStds.isEmpty() && conditionStds.size() < valids.size() ) {
             var v = valids.get(cIdx);
             // Removal
             while (!v.isEmpty() && v.peekFirst().getId() < currentIdx)
@@ -91,21 +96,45 @@ public class WindowedPatternRunner {
             // Nothing left
             if (v.isEmpty())
                 return;
-            else {
-                long pIdx = v.peekFirst().getId();
-                var currentCondition = v.peekFirst().getInfos().get(cIdx).getCondition();
-                var previousCondition = v.peekFirst().getInfos().get(cIdx - 1).getCondition();
-                // Same symbol, different sub-tree
-                if (currentCondition.getMinDist() == 0 && pIdx > currentIdx)
-                    return;
-                    // Same sub-pattern, big difference
-                else if (currentCondition.getId().subPatternIndex == previousCondition.getId().subPatternIndex &&
-                        pIdx > (currentIdx + 1))
+
+            long pIdx = v.peekFirst().getId();
+            var currentId = v.peekFirst().getInfos().get(cIdx).getCondition().getId();
+
+            // Same sub-pattern, new symbol, one or more subtrees in between -> Rewind sub-pattern
+            if ( currentId.absolutePosition > 0 && currentId.conditionIndex == 0 &&
+                    (currentIdx - conditionStds.peekLast().getId()) > 1 ) {
+
+
+                // If is first sub-pattern, matches will be caught on next iteration
+                if ( currentId.subPatternIndex == 0 )
                     return;
 
+                for (cIdx = cIdx - 1; cIdx >= 0 &&
+                        conditionStds.peekLast().getInfos().get(cIdx).getCondition().getId().isSameSubPattern(currentId); cIdx-- ) {
+                    currentIdx = conditionStds.pollLast().getId()+1;
+                }
+            }
+            // Same symbol different subtree
+            else if (currentId.conditionIndex > 0 && pIdx > currentIdx) {
+                // If is first symbol, matches will be caught on next iteration
+                if ( currentId.subPatternIndex == 0 && currentId.absolutePosition == 0 )
+                    return;
+
+                for (cIdx = cIdx - 1; cIdx >= 0 &&
+                        conditionStds.peekLast().getInfos().get(cIdx).getCondition().getId().isSameSymbol(currentId); cIdx-- ) {
+                    currentIdx = conditionStds.pollLast().getId()+1;
+                }
+
+            }
+            else {
+                conditionStds.add(v.peekFirst());
                 currentIdx = pIdx;
             }
+            cIdx++;
         }
+
+        if ( conditionStds.size() < valids.size() )
+            return;
 
         // Compute window portion to add
         // This is the last candidate for the last sub-pattern

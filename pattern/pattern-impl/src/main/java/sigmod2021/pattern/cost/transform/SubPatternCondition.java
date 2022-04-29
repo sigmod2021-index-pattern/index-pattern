@@ -134,6 +134,14 @@ public class SubPatternCondition<T extends Comparable<T>> {
                     this.subPatternIndex == other.subPatternIndex;
         }
 
+        public boolean isSameSymbol(ConditionId other) {
+            return subPatternIndex == other.subPatternIndex && absolutePosition == other.absolutePosition;
+        }
+
+        public boolean isSameSubPattern(ConditionId other) {
+            return subPatternIndex == other.subPatternIndex;
+        }
+
         /**
          * @{inheritDoc}
          */
